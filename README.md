@@ -1,16 +1,16 @@
-## Hi there 👋
+# hey, I'm [Your Name] 👋
 
-<!--
-**shannondussoye/shannondussoye** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+A short bio about yourself — what you build, what you care about, where you're based.
 
-Here are some ideas to get you started:
+---
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+<!-- STATS:START -->
+> Run the workflow to populate this section automatically.
+<!-- STATS:END -->
+
+---
+
+## 🔗 find me
+
+- 🌐 [yourwebsite.com](https://yourwebsite.com)
+- 💼 [LinkedIn](https://linkedin.com/in/yourhandle)
