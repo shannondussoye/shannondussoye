@@ -33,13 +33,18 @@ jobs:
           mkdir -p /tmp/repos
           cd /tmp/repos
 
-          # Fetch list of your repos (up to 100, excluding forks)
           gh repo list "$GH_USERNAME" \
             --limit 100 \
             --no-archived \
-            --visibility all \
+            --visibility public \
             --json name,url,isFork \
             --jq '.[] | select(.isFork == false) | select(.name | IN("shannondussoye.github.io") | not) | .url' > repo_urls.txt
+
+          gh repo list "$GH_USERNAME" \
+            --limit 100 \
+            --no-archived \
+            --visibility private \
+            --json name,url,isFork \
 
           echo "Found $(wc -l < repo_urls.txt) repos"
 
