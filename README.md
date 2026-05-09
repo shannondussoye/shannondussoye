@@ -1,6 +1,6 @@
-# hey, I'm [Your Name] 👋
+# hey, I'm Shannon 👋
 
-A short bio about yourself — what you build, what you care about, where you're based.
+shannondussoye@macquarie.com
 
 ---
 
