@@ -1,0 +1,229 @@
+name: Update Profile Stats
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # runs daily at 2am UTC
+  workflow_dispatch:        # lets you trigger it manually too
+  push:
+    branches: [main]
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout profile repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.STATS_TOKEN }}
+
+      - name: Install tokei (line counter)
+        run: |
+          curl -sL https://github.com/XAMPPRocky/tokei/releases/download/v12.1.2/tokei-x86_64-unknown-linux-gnu.tar.gz \
+            | tar xz -C /usr/local/bin
+
+      - name: Clone all your repos and count lines
+        env:
+          GH_TOKEN: ${{ secrets.STATS_TOKEN }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+        run: |
+          mkdir -p /tmp/repos
+          cd /tmp/repos
+
+          # Fetch list of your repos (up to 100, excluding forks)
+          gh repo list "$GH_USERNAME" \
+            --limit 100 \
+            --no-archived \
+            --json name,url,isFork \
+            --jq '.[] | select(.isFork == false) | .url' > repo_urls.txt
+
+          echo "Found $(wc -l < repo_urls.txt) repos"
+
+          # Clone each repo (shallow, no history needed)
+          while IFS= read -r url; do
+            repo_name=$(basename "$url")
+            echo "Cloning $repo_name..."
+            git clone --depth 1 --quiet "$url" "$repo_name" 2>/dev/null || echo "Skipped $repo_name"
+          done < repo_urls.txt
+
+      - name: Run tokei across all repos
+        run: |
+          cd /tmp/repos
+
+          # Count per-repo
+          echo "REPO_STATS<<EOF" >> $GITHUB_ENV
+          for dir in */; do
+            repo="${dir%/}"
+            lines=$(tokei "$dir" --output json 2>/dev/null \
+              | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          total = sum(v.get('code', 0) for k,v in d.items() if k != 'Total')
+          print(total)
+          " 2>/dev/null || echo 0)
+            echo "$repo:$lines"
+          done | sort -t: -k2 -rn >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          # Total lines across all repos
+          total=$(tokei /tmp/repos --output json 2>/dev/null \
+            | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          total = sum(v.get('code', 0) for k,v in d.items() if k != 'Total')
+          print(total)
+          " 2>/dev/null || echo 0)
+          echo "TOTAL_LINES=$total" >> $GITHUB_ENV
+
+          # Language breakdown (top 5)
+          lang_json=$(tokei /tmp/repos --output json 2>/dev/null || echo "{}")
+          echo "LANG_JSON<<EOF" >> $GITHUB_ENV
+          echo "$lang_json" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Fetch commit count via GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.STATS_TOKEN }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+        run: |
+          # Commits in the last year across all repos
+          since=$(date -d '1 year ago' --utc +%Y-%m-%dT%H:%M:%SZ)
+          commits=$(gh api graphql -f query='
+            query($login: String!, $from: DateTime!) {
+              user(login: $login) {
+                contributionsCollection(from: $from) {
+                  totalCommitContributions
+                }
+              }
+            }
+          ' -f login="$GH_USERNAME" -f from="$since" \
+            --jq '.data.user.contributionsCollection.totalCommitContributions')
+          echo "COMMIT_COUNT=$commits" >> $GITHUB_ENV
+
+      - name: Update README.md
+        env:
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+        run: |
+          python3 << 'PYEOF'
+          import os, json, math, datetime
+
+          total_lines = int(os.environ.get("TOTAL_LINES", 0))
+          commit_count = int(os.environ.get("COMMIT_COUNT", 0))
+          repo_stats_raw = os.environ.get("REPO_STATS", "")
+          lang_json_raw = os.environ.get("LANG_JSON", "{}")
+          username = os.environ.get("GH_USERNAME", "")
+
+          # Parse repo stats
+          repo_lines = []
+          for line in repo_stats_raw.strip().splitlines():
+            if ":" in line:
+              name, count = line.rsplit(":", 1)
+              try:
+                repo_lines.append((name.strip(), int(count.strip())))
+              except ValueError:
+                pass
+          top_repos = repo_lines[:6]
+
+          # Parse language breakdown
+          try:
+            lang_data = json.loads(lang_json_raw)
+          except Exception:
+            lang_data = {}
+
+          lang_totals = {}
+          grand_total = 0
+          for lang, stats in lang_data.items():
+            if lang == "Total":
+              continue
+            code = stats.get("code", 0)
+            lang_totals[lang] = code
+            grand_total += code
+
+          top_langs = sorted(lang_totals.items(), key=lambda x: x[1], reverse=True)[:5]
+
+          # Fun facts
+          pages = math.ceil(total_lines / 250)
+          coffees = math.ceil(commit_count / 2)
+          books = round(total_lines / 40000, 1)
+
+          # Bar chart helper (GitHub markdown doesn't support real bars,
+          # so we use a unicode block trick)
+          def bar(value, max_val, width=20):
+            filled = round((value / max_val) * width) if max_val > 0 else 0
+            return "█" * filled + "░" * (width - filled)
+
+          max_lines = top_repos[0][1] if top_repos else 1
+
+          # Language percentages
+          lang_lines_md = ""
+          for lang, count in top_langs:
+            pct = round((count / grand_total) * 100) if grand_total > 0 else 0
+            lang_lines_md += f"| {lang} | {bar(count, grand_total, 15)} | {pct}% |\n"
+
+          # Repo table
+          repo_table_md = ""
+          for name, count in top_repos:
+            repo_table_md += f"| [{name}](https://github.com/{username}/{name}) | {bar(count, max_lines, 15)} | {count:,} |\n"
+
+          # Build the stats block
+          updated = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+          stats_block = f"""<!-- STATS:START -->
+          > 🔄 Last updated: {updated}
+
+          ## 📊 code stats
+
+          | metric | value |
+          |--------|-------|
+          | 📝 total lines of code | **{total_lines:,}** |
+          | 🗂️ repos counted | **{len(repo_lines)}** |
+          | 💬 commits (last 12 months) | **{commit_count:,}** |
+
+          ## 🏆 lines of code by repo
+
+          | repo | distribution | lines |
+          |------|-------------|-------|
+          {repo_table_md.strip()}
+
+          ## 🌐 language breakdown
+
+          | language | distribution | share |
+          |----------|-------------|-------|
+          {lang_lines_md.strip()}
+
+          ## ✨ fun facts
+
+          - 📖 if printed, my code would fill **{pages:,} pages** (or ~{books} novels)
+          - ☕ estimated **{coffees:,} coffees** consumed (1 per 2 commits)
+          - 🚀 **{commit_count:,}** commits pushed in the last year
+          <!-- STATS:END -->"""
+
+          # Remove leading spaces from heredoc
+          stats_block = "\n".join(line.lstrip() for line in stats_block.splitlines())
+
+          # Read README and replace the block between markers
+          with open("README.md", "r") as f:
+            content = f.read()
+
+          import re
+          pattern = r"<!-- STATS:START -->.*?<!-- STATS:END -->"
+          if re.search(pattern, content, re.DOTALL):
+            new_content = re.sub(pattern, stats_block, content, flags=re.DOTALL)
+          else:
+            new_content = content + "\n\n" + stats_block
+
+          with open("README.md", "w") as f:
+            f.write(new_content)
+
+          print("README.md updated successfully")
+          PYEOF
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "chore: update profile stats [skip ci]"
+          git push
