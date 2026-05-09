@@ -1,6 +1,6 @@
 # hey, I'm Shannon 👋
 
-shannondussoye@macquarie.com
+shannondussoye.github.io
 
 ---
 
