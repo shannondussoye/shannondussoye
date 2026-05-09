@@ -5,42 +5,33 @@ shannondussoye.github.io
 ---
 
 <!-- STATS:START -->
-> 🔄 Last updated: 2026-05-09 11:17 UTC
+> 🔄 Last updated: 2026-05-09 14:38 UTC
 
 ## 📊 code stats
 
 | metric | value |
 |--------|-------|
-| 📝 total lines of code | **3,637** |
-| 🗂️ repos counted | **9** |
-| 💬 commits (last 12 months) | **91** |
+| 📝 total lines of code | **0** |
+| 🗂️ repos counted | **1** |
+| 💬 commits (last 12 months) | **104** |
 
 ## 🏆 lines of code by repo
 
 | repo | distribution | lines |
 |------|-------------|-------|
-| [ozbargainer](https://github.com/shannondussoye/ozbargainer) | ███████████████ | 1,549 |
-| [nsw-commute-planner](https://github.com/shannondussoye/nsw-commute-planner) | █████████░░░░░░ | 886 |
-| [Airbnb-Capstone-Project](https://github.com/shannondussoye/Airbnb-Capstone-Project) | ██████░░░░░░░░░ | 583 |
-| [Springboard](https://github.com/shannondussoye/Springboard) | ███░░░░░░░░░░░░ | 317 |
-| [domain-au](https://github.com/shannondussoye/domain-au) | █░░░░░░░░░░░░░░ | 144 |
-| [realestate-au](https://github.com/shannondussoye/realestate-au) | █░░░░░░░░░░░░░░ | 75 |
+| [*](https://github.com/shannondussoye/*) | ░░░░░░░░░░░░░░░ | 0 |
 
 ## 🌐 language breakdown
 
 | language | distribution | share |
 |----------|-------------|-------|
-| Python | █████████░░░░░░ | 62% |
-| R | ███░░░░░░░░░░░░ | 20% |
-| Shell | █░░░░░░░░░░░░░░ | 7% |
-| HTML | █░░░░░░░░░░░░░░ | 7% |
-| YAML | ░░░░░░░░░░░░░░░ | 2% |
+| Plain Text | ░░░░░░░░░░░░░░░ | 0% |
 
 ## ✨ fun facts
 
-- 📖 if printed, my code would fill **15 pages** (or ~0.1 novels)
-- ☕ estimated **46 coffees** consumed (1 per 2 commits)
-- 🚀 **91** commits pushed in the last year
+- 📖 if printed, my code would fill **0 pages** (or ~0.0 novels)
+- ☕ estimated **52 coffees** consumed (1 per 2 commits)
+- 🚀 **104** commits pushed in the last year
 <!-- STATS:END -->
 
 ---
