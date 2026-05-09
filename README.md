@@ -5,7 +5,7 @@ shannondussoye.github.io
 ---
 
 <!-- STATS:START -->
-> 🔄 Last updated: 2026-05-09 11:15 UTC
+> 🔄 Last updated: 2026-05-09 11:17 UTC
 
 ## 📊 code stats
 
@@ -13,7 +13,7 @@ shannondussoye.github.io
 |--------|-------|
 | 📝 total lines of code | **3,637** |
 | 🗂️ repos counted | **9** |
-| 💬 commits (last 12 months) | **89** |
+| 💬 commits (last 12 months) | **91** |
 
 ## 🏆 lines of code by repo
 
@@ -39,8 +39,8 @@ shannondussoye.github.io
 ## ✨ fun facts
 
 - 📖 if printed, my code would fill **15 pages** (or ~0.1 novels)
-- ☕ estimated **45 coffees** consumed (1 per 2 commits)
-- 🚀 **89** commits pushed in the last year
+- ☕ estimated **46 coffees** consumed (1 per 2 commits)
+- 🚀 **91** commits pushed in the last year
 <!-- STATS:END -->
 
 ---
