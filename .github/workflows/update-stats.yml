@@ -37,8 +37,9 @@ jobs:
           gh repo list "$GH_USERNAME" \
             --limit 100 \
             --no-archived \
+            --visibility all \
             --json name,url,isFork \
-            --jq '.[] | select(.isFork == false) | .url' > repo_urls.txt
+            --jq '.[] | select(.isFork == false) | select(.name | IN("shannondussoye.github.io") | not) | .url' > repo_urls.txt
 
           echo "Found $(wc -l < repo_urls.txt) repos"
 
