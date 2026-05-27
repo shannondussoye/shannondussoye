@@ -42,10 +42,3 @@ shannondussoye.github.io
 - ☕ estimated **79 coffees** consumed (1 per 2 commits)
 - 🚀 **157** commits pushed in the last year
 <!-- STATS:END -->
-
----
-
-## 🔗 find me
-
-- 🌐 [yourwebsite.com](https://yourwebsite.com)
-- 💼 [LinkedIn](https://linkedin.com/in/yourhandle)
